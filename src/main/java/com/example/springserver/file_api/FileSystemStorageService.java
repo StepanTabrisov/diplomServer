@@ -48,7 +48,6 @@ public class FileSystemStorageService implements IFileSytemStorage {
             e.printStackTrace();
             //throw new FileStorageException("Could not upload file");
         }
-
         return null;
     }
 
