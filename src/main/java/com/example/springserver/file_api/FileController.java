@@ -28,8 +28,18 @@ public class FileController {
         return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
     }
 
-    @GetMapping("/download/{filename:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
+    @PostMapping("/upload/{username}")
+    public ResponseEntity<FileResponse> uploadSingleFileToDir (@PathVariable String username, @RequestParam("file") MultipartFile file) {
+        String upfile = fileSytemStorage.saveFile(file, username);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/download/").path(upfile).toUriString();
+
+        return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
+    }
+
+    @GetMapping("/download/")
+    public ResponseEntity<Resource> downloadFileWithBody(@RequestBody String filename) {
 
         Resource resource = fileSytemStorage.loadFile(filename);
 
@@ -38,8 +48,18 @@ public class FileController {
                 .body(resource);
     }
 
-    @GetMapping("/download/")
-    public ResponseEntity<Resource> downloadFileWithBody(@RequestBody String filename) {
+    @GetMapping("/download/{username}")
+    public ResponseEntity<Resource> downloadFileWithBodyAndPathVar(@PathVariable String username, @RequestBody String filename) {
+
+        Resource resource = fileSytemStorage.loadFile(filename, username);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    //@GetMapping("/download/{filename:.+}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
 
         Resource resource = fileSytemStorage.loadFile(filename);
 

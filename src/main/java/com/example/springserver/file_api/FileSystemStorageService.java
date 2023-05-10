@@ -52,10 +52,47 @@ public class FileSystemStorageService implements IFileSytemStorage {
     }
 
     @Override
+    public String saveFile(MultipartFile file, String username) {
+        try {
+            String fileName = file.getOriginalFilename();
+            Path pFile;
+            if(Files.exists(Paths.get(this.dirLocation + "\\"+ username ))){
+                pFile = Paths.get(this.dirLocation + "\\"+ username ).resolve(fileName);
+            }else{
+                pFile = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username )).resolve(fileName);
+            }
+            Files.copy(file.getInputStream(), pFile, StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public Resource loadFile(String fileName) {
-        // TODO Auto-generated method stub
         try {
             Path file = this.dirLocation.resolve(fileName).normalize();
+            Resource resource = new UrlResource(file.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            }
+            else {
+                //throw new FileNotFoundException("Could not find file");
+            }
+        }
+        catch (MalformedURLException e) {
+            //throw new FileNotFoundException("Could not download file");
+        }
+        return null;
+    }
+
+    @Override
+    public Resource loadFile(String fileName, String username) {
+        try {
+            Path file = Paths.get(this.dirLocation + "\\"+ username).resolve(fileName).normalize();
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {
