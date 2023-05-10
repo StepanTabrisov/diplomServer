@@ -1,7 +1,6 @@
 package com.example.springserver.file_api;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Service
-public class FileSystemStorageService implements IFileSytemStorage {
+public class FileSystemStorageService implements iFileSystemStorage {
     private final Path dirLocation;
 
     //@Autowired

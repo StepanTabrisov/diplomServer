@@ -18,13 +18,22 @@ public class UserController {
 
     @PostMapping("/users/find-user")
     public UserData GetUserByLogin(@RequestBody String login){
-        //System.out.println(userService.findUser(login) + " " + login.trim().replace());
         return userService.findUser(login.trim().replaceAll("\"",""));
     }
 
     @PostMapping("/users/add")
     public UserData AddUser(@RequestBody UserData userData){
         return userService.save(userData);
+    }
+
+    @PostMapping("/users/check_user")
+    public boolean CheckRegisterUser(@RequestBody UserData userData){
+        return userService.CheckUserAndSave(userData);
+    }
+
+    @PostMapping("/users/check_user_password")
+    public boolean CheckAuthUser(@RequestBody UserData userData){
+        return userService.CheckUserPassword(userData);
     }
 
     /*@PostMapping("/users/find")

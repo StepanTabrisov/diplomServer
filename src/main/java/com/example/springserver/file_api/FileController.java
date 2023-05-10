@@ -14,11 +14,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class FileController {
 
     @Autowired
-    IFileSytemStorage fileSytemStorage;
+    iFileSystemStorage fileSystemStorage;
 
     @PostMapping("/uploadfile")
     public ResponseEntity<FileResponse> uploadSingleFile (@RequestParam("file") MultipartFile file) {
-        String upfile = fileSytemStorage.saveFile(file);
+        String upfile = fileSystemStorage.saveFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/download/")
@@ -30,7 +30,7 @@ public class FileController {
 
     @PostMapping("/upload/{username}")
     public ResponseEntity<FileResponse> uploadSingleFileToDir (@PathVariable String username, @RequestParam("file") MultipartFile file) {
-        String upfile = fileSytemStorage.saveFile(file, username);
+        String upfile = fileSystemStorage.saveFile(file, username);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/download/").path(upfile).toUriString();
@@ -41,7 +41,7 @@ public class FileController {
     @GetMapping("/download/")
     public ResponseEntity<Resource> downloadFileWithBody(@RequestBody String filename) {
 
-        Resource resource = fileSytemStorage.loadFile(filename);
+        Resource resource = fileSystemStorage.loadFile(filename);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
@@ -51,7 +51,7 @@ public class FileController {
     @GetMapping("/download/{username}")
     public ResponseEntity<Resource> downloadFileWithBodyAndPathVar(@PathVariable String username, @RequestBody String filename) {
 
-        Resource resource = fileSytemStorage.loadFile(filename, username);
+        Resource resource = fileSystemStorage.loadFile(filename, username);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
@@ -61,7 +61,7 @@ public class FileController {
     //@GetMapping("/download/{filename:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
 
-        Resource resource = fileSytemStorage.loadFile(filename);
+        Resource resource = fileSystemStorage.loadFile(filename);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")

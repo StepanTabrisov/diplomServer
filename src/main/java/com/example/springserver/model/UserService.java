@@ -28,7 +28,25 @@ public class UserService {
     }
 
     public UserData findUser(String login){
-        //System.out.println(userRepository.findByLogin(login) + " " + login);
-       return userRepository.findByLogin(login);
+        return userRepository.findUserByLogin(login);
+    }
+
+    public boolean CheckUser(String login){
+        UserData userData = userRepository.findUserByLogin(login);
+        return userData != null;
+    }
+
+    public boolean CheckUserAndSave(UserData userData){
+        UserData temp = userRepository.findUserByLogin(userData.getLogin());
+        if(temp != null) return false;
+        if(temp.getLogin().equals(userData.getLogin())) return false;
+        this.save(userData);
+        return true;
+    }
+
+    public boolean CheckUserPassword(UserData userData){
+        if(!CheckUser(userData.getLogin())) return false;
+        String temp = userRepository.findPasswordByLogin(userData.getLogin());
+        return temp.equals(userData.getPassword());
     }
 }
