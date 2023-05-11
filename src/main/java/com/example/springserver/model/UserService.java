@@ -1,5 +1,6 @@
 package com.example.springserver.model;
 
+import com.example.springserver.file_api.iFileSystemStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private iFileSystemStorage fileSystemStorage;
 
     public UserData save(UserData userData){
        return userRepository.save(userData);
@@ -39,8 +43,8 @@ public class UserService {
     public boolean CheckUserAndSave(UserData userData){
         UserData temp = userRepository.findUserByLogin(userData.getLogin());
         if(temp != null) return false;
-        if(temp.getLogin().equals(userData.getLogin())) return false;
         this.save(userData);
+        fileSystemStorage.createDir(userData.getLogin());
         return true;
     }
 

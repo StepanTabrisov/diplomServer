@@ -19,30 +19,20 @@ public class FileController {
     @PostMapping("/uploadfile")
     public ResponseEntity<FileResponse> uploadSingleFile (@RequestParam("file") MultipartFile file) {
         String upfile = fileSystemStorage.saveFile(file);
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/download/")
-                .path(upfile)
-                .toUriString();
-
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/download/").path(upfile).toUriString();
         return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
     }
 
     @PostMapping("/upload/{username}")
     public ResponseEntity<FileResponse> uploadSingleFileToDir (@PathVariable String username, @RequestParam("file") MultipartFile file) {
         String upfile = fileSystemStorage.saveFile(file, username);
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/download/").path(upfile).toUriString();
-
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/download/").path(upfile).toUriString();
         return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
     }
 
     @GetMapping("/download/")
     public ResponseEntity<Resource> downloadFileWithBody(@RequestBody String filename) {
-
         Resource resource = fileSystemStorage.loadFile(filename);
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
@@ -50,12 +40,24 @@ public class FileController {
 
     @GetMapping("/download/{username}")
     public ResponseEntity<Resource> downloadFileWithBodyAndPathVar(@PathVariable String username, @RequestBody String filename) {
-
         Resource resource = fileSystemStorage.loadFile(filename, username);
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
+    }
+
+    // сохранение списка
+    @PostMapping("/save/{username}")
+    public ResponseEntity<String> saveDirList (@PathVariable String username, @RequestBody String data) {
+        fileSystemStorage.saveUserDirList(username, data);
+        return ResponseEntity.status(HttpStatus.OK).body("Save");
+    }
+
+    // получение списка
+    @PostMapping("/load/{username}")
+    public ResponseEntity<String> loadDirList (@PathVariable String username, @RequestBody String data) {
+        String list = fileSystemStorage.loadUserDirList(username, data);
+        return ResponseEntity.status(HttpStatus.OK).body(list);
     }
 
     //@GetMapping("/download/{filename:.+}")

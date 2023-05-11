@@ -9,4 +9,8 @@ public interface iFileSystemStorage {
     String saveFile(MultipartFile file, String username);
     Resource loadFile(String fileName);
     Resource loadFile(String fileName, String username);
+    String createDir(String username);
+    String saveUserDirList(String username, String data);
+    String loadUserDirList(String username, String title);
+
 }
