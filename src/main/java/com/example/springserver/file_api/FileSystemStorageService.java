@@ -10,6 +10,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -56,12 +57,13 @@ public class FileSystemStorageService implements iFileSystemStorage {
     public String saveFile(MultipartFile file, String username) {
         try {
             String fileName = file.getOriginalFilename();
-            Path pFile;
-            if(Files.exists(Paths.get(this.dirLocation + "\\"+ username ))){
-                pFile = Paths.get(this.dirLocation + "\\"+ username ).resolve(Objects.requireNonNull(fileName));
-            }else{
-                pFile = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username )).resolve(Objects.requireNonNull(fileName));
+            Path pFile = null;
+            if(Files.exists(Paths.get(this.dirLocation + "\\"+ username + "\\files"))){
+                pFile = Paths.get(this.dirLocation + "\\"+ username + "\\files").resolve(Objects.requireNonNull(fileName));
             }
+            //else{
+                //pFile = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username )).resolve(Objects.requireNonNull(fileName));
+            //}
             Files.copy(file.getInputStream(), pFile, StandardCopyOption.REPLACE_EXISTING);
             return fileName;
         } catch (Exception e) {
@@ -86,7 +88,7 @@ public class FileSystemStorageService implements iFileSystemStorage {
     @Override
     public Resource loadFile(String fileName, String username) {
         try {
-            Path file = Paths.get(this.dirLocation + "\\"+ username).resolve(fileName).normalize();
+            Path file = Paths.get(this.dirLocation + "\\"+ username + "\\files").resolve(fileName).normalize();
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) return resource;
         }
@@ -97,12 +99,14 @@ public class FileSystemStorageService implements iFileSystemStorage {
     }
 
     // создание папки и файла для сериализации
+    // username -> /files (save files) , /data (save dir list)
     @Override
     public String createDir(String username) {
         try {
             Path dir = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username ));
-            Path file = Paths.get(dir + "\\" + username + ".json");
-            Files.createFile(file);
+            Path data = Files.createDirectories(Paths.get(dir + "\\"  + "data"));
+            Path files = Files.createDirectories(Paths.get(dir + "\\"  + "files"));
+            //Files.createFile(file);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -111,18 +115,38 @@ public class FileSystemStorageService implements iFileSystemStorage {
 
     // сохранение списка папок/файлов пользователя
     @Override
-    public String saveUserDirList(String username, String data) {
+    public String saveUserDirList(String username, Fields data) {
         try {
-            Files.write(Paths.get(this.dirLocation + "\\"+ username + "\\" + username + ".json"), Collections.singleton(data), new StandardOpenOption[]{StandardOpenOption.APPEND});
+            ObjectMapper objectMapper = new ObjectMapper();
+            //Fields obj = objectMapper.readValue(data, Fields.class);
+            Path dir = Paths.get(this.dirLocation + "\\" + username);
+            Path file = Paths.get(dir + "\\" + "data" + "\\" + data.tempTitle + ".json").normalize();
+            if(!Files.exists(file)) Files.createFile(file);
+            objectMapper.writeValue(new File(file.toString()), data);
+            //Fields obj1 = objectMapper.readValue(new File(file.toString()), Fields.class);
+            //System.out.println(obj1);
+            //Files.write(file, Collections.singleton(data));
         }catch (Exception e){
             e.printStackTrace();
         }
         return null;
     }
 
+    // загрузка списка
     @Override
     public String loadUserDirList(String username, String title) {
-        try (FileInputStream fis = new FileInputStream(Paths.get(this.dirLocation + "\\"+ username + "\\" + username + ".json").toString())) {
+        try {
+            Path dir = Paths.get(this.dirLocation + "\\" + username);
+            Path file = Paths.get(dir + "\\" + "data" + "\\" + title + ".json").normalize();
+            if(!Files.exists(file)) return "empty";
+            ObjectMapper objectMapper = new ObjectMapper();
+            Fields result = objectMapper.readValue(new File(file.toString()), Fields.class);
+            System.out.println(result);
+            return objectMapper.writeValueAsString(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*try (FileInputStream fis = new FileInputStream(Paths.get(this.dirLocation + "\\"+ username + "\\" + username + ".json").toString())) {
             JsonFactory jf = new JsonFactory();
             JsonParser jp = jf.createParser(fis);
             jp.setCodec(new ObjectMapper());
@@ -134,6 +158,22 @@ public class FileSystemStorageService implements iFileSystemStorage {
                 jp.nextToken();
             }
             return new ObjectMapper().writeValueAsString(token);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        return null;
+    }
+
+    @Override
+    public Fields loadUserDirList1(String username, String title) {
+        try {
+            Path dir = Paths.get(this.dirLocation + "\\" + username);
+            Path file = Paths.get(dir + "\\" + "data" + "\\" + title + ".json").normalize();
+            if(!Files.exists(file)) return null;
+            ObjectMapper objectMapper = new ObjectMapper();
+            Fields result = objectMapper.readValue(new File(file.toString()), Fields.class);
+            System.out.println(result);
+            return result;
         } catch (IOException e) {
             e.printStackTrace();
         }

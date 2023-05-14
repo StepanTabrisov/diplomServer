@@ -1,5 +1,6 @@
 package com.example.springserver.file_api;
 
+import com.example.springserver.dir.Fields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +39,7 @@ public class FileController {
                 .body(resource);
     }
 
-    @GetMapping("/download/{username}")
+    @PostMapping("/download/{username}")
     public ResponseEntity<Resource> downloadFileWithBodyAndPathVar(@PathVariable String username, @RequestBody String filename) {
         Resource resource = fileSystemStorage.loadFile(filename, username);
         return ResponseEntity.ok()
@@ -48,16 +49,19 @@ public class FileController {
 
     // сохранение списка
     @PostMapping("/save/{username}")
-    public ResponseEntity<String> saveDirList (@PathVariable String username, @RequestBody String data) {
+    public ResponseEntity<String> saveDirList (@PathVariable String username, @RequestBody Fields data) {
         fileSystemStorage.saveUserDirList(username, data);
         return ResponseEntity.status(HttpStatus.OK).body("Save");
     }
 
     // получение списка
     @PostMapping("/load/{username}")
-    public ResponseEntity<String> loadDirList (@PathVariable String username, @RequestBody String data) {
-        String list = fileSystemStorage.loadUserDirList(username, data);
-        return ResponseEntity.status(HttpStatus.OK).body(list);
+    public Fields loadDirList (@PathVariable String username, @RequestBody String data) {
+        /*String list = fileSystemStorage.loadUserDirList(username, data.trim().replaceAll("\"",""));
+        System.out.println(list);
+        return list;*/
+        //return ResponseEntity.status(HttpStatus.OK).body(list);
+        return fileSystemStorage.loadUserDirList1(username, data.trim().replaceAll("\"",""));
     }
 
     //@GetMapping("/download/{filename:.+}")
