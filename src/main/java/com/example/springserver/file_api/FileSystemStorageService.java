@@ -41,19 +41,6 @@ public class FileSystemStorageService implements iFileSystemStorage {
     }
 
     @Override
-    public String saveFile(MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            Path pathFile = this.dirLocation.resolve(Objects.requireNonNull(fileName));
-            Files.copy(file.getInputStream(), pathFile, StandardCopyOption.REPLACE_EXISTING);
-            return fileName;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
     public String saveFile(MultipartFile file, String username) {
         try {
             String fileName = file.getOriginalFilename();
@@ -61,25 +48,9 @@ public class FileSystemStorageService implements iFileSystemStorage {
             if(Files.exists(Paths.get(this.dirLocation + "\\"+ username + "\\files"))){
                 pFile = Paths.get(this.dirLocation + "\\"+ username + "\\files").resolve(Objects.requireNonNull(fileName));
             }
-            //else{
-                //pFile = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username )).resolve(Objects.requireNonNull(fileName));
-            //}
             Files.copy(file.getInputStream(), pFile, StandardCopyOption.REPLACE_EXISTING);
             return fileName;
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public Resource loadFile(String fileName) {
-        try {
-            Path file = this.dirLocation.resolve(fileName).normalize();
-            Resource resource = new UrlResource(file.toUri());
-            if (resource.exists() || resource.isReadable()) return resource;
-        }
-        catch (MalformedURLException e) {
             e.printStackTrace();
         }
         return null;
@@ -104,9 +75,8 @@ public class FileSystemStorageService implements iFileSystemStorage {
     public String createDir(String username) {
         try {
             Path dir = Files.createDirectory(Paths.get(this.dirLocation + "\\"+ username ));
-            Path data = Files.createDirectories(Paths.get(dir + "\\"  + "data"));
-            Path files = Files.createDirectories(Paths.get(dir + "\\"  + "files"));
-            //Files.createFile(file);
+            Files.createDirectories(Paths.get(dir + "\\"  + "data"));
+            Files.createDirectories(Paths.get(dir + "\\"  + "files"));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -118,14 +88,10 @@ public class FileSystemStorageService implements iFileSystemStorage {
     public String saveUserDirList(String username, Fields data) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            //Fields obj = objectMapper.readValue(data, Fields.class);
             Path dir = Paths.get(this.dirLocation + "\\" + username);
             Path file = Paths.get(dir + "\\" + "data" + "\\" + data.tempTitle + ".json").normalize();
             if(!Files.exists(file)) Files.createFile(file);
             objectMapper.writeValue(new File(file.toString()), data);
-            //Fields obj1 = objectMapper.readValue(new File(file.toString()), Fields.class);
-            //System.out.println(obj1);
-            //Files.write(file, Collections.singleton(data));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -134,37 +100,6 @@ public class FileSystemStorageService implements iFileSystemStorage {
 
     // загрузка списка
     @Override
-    public String loadUserDirList(String username, String title) {
-        try {
-            Path dir = Paths.get(this.dirLocation + "\\" + username);
-            Path file = Paths.get(dir + "\\" + "data" + "\\" + title + ".json").normalize();
-            if(!Files.exists(file)) return "empty";
-            ObjectMapper objectMapper = new ObjectMapper();
-            Fields result = objectMapper.readValue(new File(file.toString()), Fields.class);
-            System.out.println(result);
-            return objectMapper.writeValueAsString(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        /*try (FileInputStream fis = new FileInputStream(Paths.get(this.dirLocation + "\\"+ username + "\\" + username + ".json").toString())) {
-            JsonFactory jf = new JsonFactory();
-            JsonParser jp = jf.createParser(fis);
-            jp.setCodec(new ObjectMapper());
-            jp.nextToken();
-            Fields token = null;
-            while (jp.hasCurrentToken()) {
-                token = jp.readValueAs(Fields.class);
-                if(token.tempTitle.equals(title)) break;
-                jp.nextToken();
-            }
-            return new ObjectMapper().writeValueAsString(token);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        return null;
-    }
-
-    @Override
     public Fields loadUserDirList1(String username, String title) {
         try {
             Path dir = Paths.get(this.dirLocation + "\\" + username);
@@ -172,7 +107,6 @@ public class FileSystemStorageService implements iFileSystemStorage {
             if(!Files.exists(file)) return null;
             ObjectMapper objectMapper = new ObjectMapper();
             Fields result = objectMapper.readValue(new File(file.toString()), Fields.class);
-            System.out.println(result);
             return result;
         } catch (IOException e) {
             e.printStackTrace();

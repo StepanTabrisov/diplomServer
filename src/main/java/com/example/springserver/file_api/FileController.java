@@ -17,13 +17,6 @@ public class FileController {
     @Autowired
     iFileSystemStorage fileSystemStorage;
 
-    @PostMapping("/uploadfile")
-    public ResponseEntity<FileResponse> uploadSingleFile (@RequestParam("file") MultipartFile file) {
-        String upfile = fileSystemStorage.saveFile(file);
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/download/").path(upfile).toUriString();
-        return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
-    }
-
     @PostMapping("/upload/{username}")
     public ResponseEntity<FileResponse> uploadSingleFileToDir (@PathVariable String username, @RequestParam("file") MultipartFile file) {
         String upfile = fileSystemStorage.saveFile(file, username);
@@ -31,20 +24,10 @@ public class FileController {
         return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
     }
 
-    @GetMapping("/download/")
-    public ResponseEntity<Resource> downloadFileWithBody(@RequestBody String filename) {
-        Resource resource = fileSystemStorage.loadFile(filename);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
     @PostMapping("/download/{username}")
     public ResponseEntity<Resource> downloadFileWithBodyAndPathVar(@PathVariable String username, @RequestBody String filename) {
-        Resource resource = fileSystemStorage.loadFile(filename, username);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+        Resource resource = fileSystemStorage.loadFile(filename.trim().replaceAll("\"",""), username);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"").body(resource);
     }
 
     // сохранение списка
@@ -57,20 +40,6 @@ public class FileController {
     // получение списка
     @PostMapping("/load/{username}")
     public Fields loadDirList (@PathVariable String username, @RequestBody String data) {
-        /*String list = fileSystemStorage.loadUserDirList(username, data.trim().replaceAll("\"",""));
-        System.out.println(list);
-        return list;*/
-        //return ResponseEntity.status(HttpStatus.OK).body(list);
         return fileSystemStorage.loadUserDirList1(username, data.trim().replaceAll("\"",""));
-    }
-
-    //@GetMapping("/download/{filename:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
-
-        Resource resource = fileSystemStorage.loadFile(filename);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
     }
 }

@@ -21,10 +21,6 @@ public class UserService {
        return userRepository.save(userData);
     }
 
-    public void delete(UserData userData){
-        userRepository.delete(userData);
-    }
-
     public List<UserData> getAllUsers(){
         List<UserData> result = new ArrayList<>();
         Streamable.of(userRepository.findAll()).forEach(result::add);

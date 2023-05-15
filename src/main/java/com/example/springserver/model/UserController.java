@@ -10,16 +10,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/users/get-all")
-    public List<UserData> getAllUsers(){
-        return userService.getAllUsers();
-    }
-
-    @PostMapping("/users/find-user")
-    public UserData GetUserByLogin(@RequestBody String login){
-        return userService.findUser(login.trim().replaceAll("\"",""));
-    }
-
     @PostMapping("/users/add")
     public UserData AddUser(@RequestBody UserData userData){
         return userService.save(userData);
@@ -36,9 +26,4 @@ public class UserController {
     public boolean CheckAuthUser(@RequestBody UserData userData){
         return userService.CheckUserPassword(userData);
     }
-
-    /*@PostMapping("/users/find")
-    public UserData GetUserByLogin(@RequestBody String login){
-        return userService.findUser(login);
-    }*/
 }
